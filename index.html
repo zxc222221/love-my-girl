@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Для неё</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* Экран 1: Интро */
+        #introScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease;
+        }
+
+        .typing-text {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 80%;
+            min-height: 50px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .neon-btn {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #ff2a5f;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 42, 95, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .neon-btn:hover {
+            background: #ff2a5f;
+            box-shadow: 0 0 30px rgba(255, 42, 95, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Экран 2: Главный контент */
+        .main-card {
+            opacity: 0;
+            transform: scale(0.9) translateZ(-50px);
+            transition: all 1.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            padding: 30px;
+            background: rgba(10, 10, 10, 0.75);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .main-card.visible {
+            opacity: 1;
+            transform: scale(1) translateZ(0);
+        }
+
+        .img-container {
+            width: 100%;
+            height: 350px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(255, 42, 95, 0.15);
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(20%);
+            transition: filter 0.5s ease;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .proposal-text {
+            color: #888;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 35px;
+        }
+
+        /* Кнопки */
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            min-height: 60px;
+            position: relative;
+        }
+
+        .btn-main {
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        #yesBtn {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.4);
+        }
+
+        #noBtn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            position: absolute;
+            transition: all 0.1s ease;
+            z-index: 50;
+        }
+
+        /* Эффект взрыва сердец */
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            animation: fly 3s forwards cubic-bezier(0.1, 0.8, 0.2, 1);
+            z-index: 99;
+        }
+
+        @keyframes fly {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0) rotate(var(--r));
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Аудио плеер (скрытый) -->
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ЭКРАН 1: Интро -->
+    <div id="introScreen">
+        <div class="typing-text" id="typewriter"></div>
+        <button class="neon-btn" id="startBtn" style="display: none;" onclick="startExperience()">Включить звук и войти</button>
+    </div>
+
+    <!-- ЭКРАН 2: Предложение -->
+    <div class="main-card" id="mainCard">
+        <div class="img-container">
+            <img src="photo.jpg" alt="Ты">
+        </div>
+        <h1 id="title">У меня есть к тебе вопрос...</h1>
+        <p class="proposal-text" id="text">Каждая секунда с тобой — это лучшее, что со мной происходило. Я хочу, чтобы это длилось вечность. Выйдешь за меня?</p>
+        
+        <div class="action-btns" id="btnContainer">
+            <button class="btn-main" id="yesBtn" onclick="celebrate()">ДА</button>
+            <button class="btn-main" id="noBtn">Нет</button>
+        </div>
+    </div>
+
+    <script>
+        // Текст для эффекта печатания на первом экране
+        const introString = "Для той, которая изменила мой мир...";
+        let i = 0;
+
+        function typeWriter() {
+            if (i < introString.length) {
+                document.getElementById("typewriter").innerHTML += introString.charAt(i);
+                i++;
+                setTimeout(typeWriter, 70);
+            } else {
+                document.getElementById("startBtn").style.display = "block";
+            }
+        }
+
+        // Запуск печати при загрузке
+        window.onload = typeWriter;
+
+        // Переход ко второму экрану
+        function startExperience() {
+            const music = document.getElementById("bgMusic");
+            music.volume = 0.4; // Громкость на 40%, чтобы не оглушить
+            music.play().catch(e => console.log("Музыка заблокирована браузером"));
+
+            document.getElementById("introScreen").style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById("introScreen").style.display = "none";
+                document.getElementById("mainCard").classList.add("visible");
+            }, 1000);
+        }
+
+        // Логика убегающей кнопки "Нет"
+        const noBtn = document.getElementById("noBtn");
+        
+        // Сразу задаем дефолтное положение, чтобы кнопка не прыгала в угол
+        noBtn.style.left = "60%";
+
+        function moveButton() {
+            // Генерируем случайные координаты в пределах экрана, но с отступами
+            const x = Math.random() * (window.innerWidth - 150);
+            const y = Math.random() * (window.innerHeight - 60);
+            
+            noBtn.style.position = "fixed";
+            noBtn.style.left = x + "px";
+            noBtn.style.top = y + "px";
+        }
+
+        noBtn.addEventListener("mouseenter", moveButton);
+        noBtn.addEventListener("click", moveButton); // Для мобилок при тапе
+        noBtn.addEventListener("touchstart", moveButton);
+
+        // Финал — Салют из сердец
+        function celebrate() {
+            document.getElementById("title").innerText = "Самый счастливый день! ❤️";
+            document.getElementById("text").innerText = "Я люблю тебя. Спасибо, что ты есть.";
+            document.getElementById("btnContainer").style.display = "none";
+
+            // Взрыв неоновых сердец
+            setInterval(spawnHearts, 80);
+        }
+
+        function spawnHearts() {
+            for(let i=0; i<5; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart-particle');
+                
+                // Рандомный выбор неонового цвета
+                const colors = ['#ff2a5f', '#ff7aa2', '#ffffff', '#ff0044'];
+                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+                heart.innerHTML = '❤️';
+                
+                // Спавн по всему экрану
+                heart.style.left = Math.random() * window.innerWidth + 'px';
+                heart.style.top = Math.random() * window.innerHeight + 'px';
+                heart.style.fontSize = Math.random() * 20 + 15 + 'px';
+
+                // Направление разлета
+                heart.style.setProperty('--x', (Math.random() * 300 - 150) + 'px');
+                heart.style.setProperty('--y', (Math.random() * -400 - 100) + 'px');
+                heart.style.setProperty('--r', (Math.random() * 360) + 'deg');
+
+                document.body.appendChild(heart);
+
+                setTimeout(() => heart.remove(), 2500);
+            }
+        }
+    </script>
+</body>
+</html>
